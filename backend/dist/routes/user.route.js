@@ -1,0 +1,20 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const user_controller_1 = __importDefault(require("../controllers/user.controller"));
+const user_repository_1 = __importDefault(require("../repositories/user.repository"));
+const user_service_1 = __importDefault(require("../services/user.service"));
+const express_1 = __importDefault(require("express"));
+const userRepository = new user_repository_1.default();
+const userService = new user_service_1.default(userRepository);
+const userController = new user_controller_1.default(userService);
+const router = express_1.default.Router();
+router.get("/", userController.getAllUsers.bind(userController));
+router.get("/:id", userController.getUserById.bind(userController));
+router.get("/email/:email", userController.getUserByEmail.bind(userController));
+router.post("/", userController.createUser.bind(userController));
+router.put("/:id", userController.updateUser.bind(userController));
+router.delete("/:id", userController.deleteUser.bind(userController));
+exports.default = router;
