@@ -1,19 +1,20 @@
 import { db } from "@/config/db";
 import { UpdateUserDTO } from "@/dtos/user.dto";
-import { User } from "@prisma/client";
+import { User } from "@/generated/prisma";
+import { IUserRepository } from "./IUserRepository";
 
-class UserRepository {
-  async getAll(): Promise<User[]> {
+class UserRepository implements IUserRepository {
+  async findAll(): Promise<User[]> {
     return await db.user.findMany();
   }
 
-  async getById(id: string): Promise<User | null> {
+  async findById(id: string): Promise<User | null> {
     return await db.user.findUnique({
       where: { id },
     });
   }
 
-  async getByEmail(email: string): Promise<User | null> {
+  async findByEmail(email: string): Promise<User | null> {
     return await db.user.findUnique({
       where: { email },
     });

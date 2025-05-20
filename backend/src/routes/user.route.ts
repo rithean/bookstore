@@ -1,14 +1,9 @@
-import UserController from "@/controllers/user.controller";
+import { userFactory } from "@/factories/user.factory";
 import { authenticate, authorize } from "@/middleware/auth.middleware";
-import UserRepository from "@/repositories/user.repository";
-import UserService from "@/services/user.service";
 import express from "express";
 
-const userRepository = new UserRepository();
-const userService = new UserService(userRepository);
-const userController = new UserController(userService);
-
 const router = express.Router();
+const userController = userFactory();
 
 router.get(
   "/",

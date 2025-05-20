@@ -1,9 +1,9 @@
 import { CreateOrderDTO, UpdateOrderDTO } from "@/dtos/order.dto";
 import { Order } from "@/generated/prisma";
-import OrderRepository from "@/repositories/order.repository";
+import { IOrderRepository } from "@/repositories/order/IOrderRepository";
 
 class OrderService {
-  constructor(private readonly orderRepository: OrderRepository) {}
+  constructor(private readonly orderRepository: IOrderRepository) {}
 
   async createOrder(orderDto: CreateOrderDTO): Promise<Order> {
     return this.orderRepository.create(orderDto);

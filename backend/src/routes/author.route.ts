@@ -1,14 +1,9 @@
-import express from "express";
-import AuthorRepository from "@/repositories/author.repository";
-import AuthorService from "@/services/author.service";
-import AuthorController from "@/controllers/author.controller";
+import { authorFactory } from "@/factories/author.factory";
 import { authenticate, authorize } from "@/middleware/auth.middleware";
-
-const authorRepository = new AuthorRepository();
-const authorService = new AuthorService(authorRepository);
-const authorController = new AuthorController(authorService);
+import express from "express";
 
 const router = express.Router();
+const authorController = authorFactory();
 
 router.get(
   "/",

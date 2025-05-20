@@ -5,11 +5,12 @@ import {
   generateRefreshToken,
   verifyRefreshToken,
 } from "@/utils/jwt";
-import { Role } from "@prisma/client";
+import { Role, User } from "@/generated/prisma";
 import bcrypt from "bcryptjs";
+import { IAuthRepository } from "./IAuthRepository";
 
-class AuthRepository {
-  async register(userData: CreateUserDTO) {
+class AuthRepository implements IAuthRepository {
+  async register(userData: CreateUserDTO): Promise<Omit<User, "password">> {
     const { name, email, password, role } = userData;
 
     const existingUser = await db.user.findUnique({
@@ -30,22 +31,15 @@ class AuthRepository {
       },
     });
 
-    const accessToken = generateAccessToken({
-      id: user.id,
-      email: user.email,
-      role: user.role,
-    });
-
-    const refreshToken = generateRefreshToken({
-      id: user.id,
-      email: user.email,
-      role: user.role,
-    });
-
-    return { accessToken, refreshToken, user };
+    const { password: _, ...safeUser } = user;
+    return safeUser;
   }
 
-  async login(userData: CreateUserDTO) {
+  async login(userData: CreateUserDTO): Promise<{
+    accessToken: string;
+    refreshToken: string;
+    user: Omit<User, "password">;
+  }> {
     const { email, password } = userData;
 
     const user = await db.user.findUnique({
@@ -55,9 +49,7 @@ class AuthRepository {
     if (!user) throw new Error("Invalid email or password");
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (!isPasswordValid) {
-      throw new Error("Invalid email or password");
-    }
+    if (!isPasswordValid) throw new Error("Invalid email or password");
 
     const accessToken = generateAccessToken({
       id: user.id,
@@ -71,10 +63,12 @@ class AuthRepository {
       role: user.role,
     });
 
-    return { accessToken, refreshToken, user };
+    const { password: _, ...responseUser } = user;
+
+    return { accessToken, refreshToken, user: responseUser };
   }
 
-  async refreshToken(token: string) {
+  async refreshToken(token: string): Promise<{ accessToken: string }> {
     const decoded = verifyRefreshToken(token);
 
     const user = await db.user.findUnique({
@@ -92,7 +86,7 @@ class AuthRepository {
     return { accessToken };
   }
 
-  async getMe(userId: string) {
+  async getMe(userId: string): Promise<Omit<User, "password">> {
     const user = await db.user.findUnique({
       where: { id: userId },
       select: {
@@ -101,12 +95,19 @@ class AuthRepository {
         email: true,
         role: true,
         isActive: true,
+        phone: true,
+        dob: true,
+        gender: true,
+        address: true,
+        avatar: true,
+        tags: true,
         createdAt: true,
         updatedAt: true,
       },
     });
 
     if (!user) throw new Error("User not found");
+
     return user;
   }
 }

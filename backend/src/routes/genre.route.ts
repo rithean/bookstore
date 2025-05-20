@@ -1,22 +1,15 @@
 import { Router } from "express";
-import GenreRepository from "@/repositories/genre.repository";
-import GenreController from "@/controllers/genre.controller";
-import GenreService from "@/services/genre.service";
-import { CreateGenreDTO, UpdateGenreDTO } from "@/dtos/genre.dto";
-import { validateDTO } from "@/middleware/validate.middleware";
 import { authenticate, authorize } from "@/middleware/auth.middleware";
+import { genreFactory } from "@/factories/genre.factory";
 
 const router = Router();
 
-const genreController = new GenreController(
-  new GenreService(new GenreRepository())
-);
+const genreController = genreFactory();
 
 router.post(
   "/",
   authenticate,
   authorize(["ADMIN"]),
-  validateDTO(CreateGenreDTO),
   genreController.createGenre.bind(genreController)
 );
 
@@ -36,7 +29,6 @@ router.put(
   "/:id",
   authenticate,
   authorize(["ADMIN"]),
-  validateDTO(UpdateGenreDTO),
   genreController.updateGenre.bind(genreController)
 );
 

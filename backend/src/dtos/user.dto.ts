@@ -10,6 +10,7 @@ import {
   IsArray,
   Length,
   Matches,
+  IsBoolean,
 } from "class-validator";
 
 export class CreateUserDTO {
@@ -109,3 +110,56 @@ export class UpdateUserDTO {
   @IsEnum(Role)
   role?: Role;
 }
+
+export class UserProfileDTO {
+  @IsString()
+  id!: string;
+
+  @IsString()
+  @Length(2, 50)
+  name!: string;
+
+  @IsEmail()
+  email!: string;
+
+  @IsEnum(Role)
+  role!: Role;
+
+  @IsBoolean()
+  isActive!: boolean;
+
+  @IsOptional()
+  @IsString()
+  phone?: string;
+
+  @IsOptional()
+  @Type(() => Date)
+  @IsDate()
+  dob?: Date;
+
+  @IsOptional()
+  @IsEnum(Gender)
+  gender?: Gender;
+
+  @IsOptional()
+  @IsString()
+  address?: string;
+
+  @IsOptional()
+  @IsString()
+  avatar?: string;
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  tags?: string[];
+
+  @Type(() => Date)
+  @IsDate()
+  createdAt!: Date;
+
+  @Type(() => Date)
+  @IsDate()
+  updatedAt!: Date;
+}
+

@@ -1,13 +1,9 @@
 import { Router } from "express";
-import BookRepository from "@/repositories/book.repository";
-import BookService from "@/services/book.service";
-import BookController from "@/controllers/book.controller";
 import { authenticate, authorize } from "@/middleware/auth.middleware";
+import { bookFactory } from "@/factories/book.factory";
 
 const router = Router();
-const bookController = new BookController(
-  new BookService(new BookRepository())
-);
+const bookController = bookFactory();
 
 router.post(
   "/",

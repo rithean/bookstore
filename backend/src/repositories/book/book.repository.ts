@@ -1,9 +1,15 @@
 import { db } from "@/config/db";
 import { CreateBookDTO, UpdateBookDTO } from "@/dtos/book.dto";
-import { Book } from "@/generated/prisma";
+import { Book, Author, Genre } from "@/generated/prisma";
+import { IBookRepository } from "./IBookRepository";
 
-class BookRepository {
-  async create(bookDto: CreateBookDTO): Promise<any> {
+class BookRepository implements IBookRepository {
+  async create(bookDto: CreateBookDTO): Promise<
+    Book & {
+      author: Author;
+      genres: { genre: Genre }[];
+    }
+  > {
     const { genreIds, ...bookData } = bookDto;
 
     const book = await db.book.create({
@@ -25,10 +31,18 @@ class BookRepository {
       },
     });
 
-    return this._formatBookResponse(book);
+    return book;
   }
 
-  async findAll(genreId?: string, authorId?: string): Promise<any[]> {
+  async findAll(
+    genreId?: string,
+    authorId?: string
+  ): Promise<
+    (Book & {
+      author: Author;
+      genres: { genre: Genre }[];
+    })[]
+  > {
     const whereClause: any = {
       isDeleted: false,
       ...(authorId && { authorId }),
@@ -51,10 +65,16 @@ class BookRepository {
       ? books.filter((book) => book.genres.some((g) => g.genreId === genreId))
       : books;
 
-    return filteredBooks.map(this._formatBookResponse);
+    return filteredBooks;
   }
 
-  async findById(id: string): Promise<any | null> {
+  async findById(id: string): Promise<
+    | (Book & {
+        author: Author;
+        genres: { genre: Genre }[];
+      })
+    | null
+  > {
     const book = await db.book.findUnique({
       where: { id },
       include: {
@@ -66,10 +86,16 @@ class BookRepository {
     });
 
     if (!book || book.isDeleted) return null;
-    return this._formatBookResponse(book);
+    return book;
   }
 
-  async findByISBN(isbn: string): Promise<any | null> {
+  async findByISBN(isbn: string): Promise<
+    | (Book & {
+        author: Author;
+        genres: { genre: Genre }[];
+      })
+    | null
+  > {
     const book = await db.book.findUnique({
       where: { isbn },
       include: {
@@ -81,10 +107,15 @@ class BookRepository {
     });
 
     if (!book || book.isDeleted) return null;
-    return this._formatBookResponse(book);
+    return book;
   }
 
-  async findByAuthor(authorId: string): Promise<any[]> {
+  async findByAuthor(authorId: string): Promise<
+    (Book & {
+      author: Author;
+      genres: { genre: Genre }[];
+    })[]
+  > {
     const books = await db.book.findMany({
       where: {
         authorId,
@@ -98,10 +129,15 @@ class BookRepository {
       },
     });
 
-    return books.map(this._formatBookResponse);
+    return books;
   }
 
-  async findByGenre(genreId: string): Promise<any[]> {
+  async findByGenre(genreId: string): Promise<
+    (Book & {
+      author: Author;
+      genres: { genre: Genre }[];
+    })[]
+  > {
     const bookGenres = await db.bookGenre.findMany({
       where: { genreId },
       include: {
@@ -116,13 +152,19 @@ class BookRepository {
       },
     });
 
-    return bookGenres
-      .map((bg) => bg.book)
-      .filter((b) => !b.isDeleted)
-      .map(this._formatBookResponse);
+    return bookGenres.map((bg) => bg.book).filter((b) => !b.isDeleted);
   }
 
-  async update(id: string, updateDto: UpdateBookDTO): Promise<any | null> {
+  async update(
+    id: string,
+    updateDto: UpdateBookDTO
+  ): Promise<
+    | (Book & {
+        author: Author;
+        genres: { genre: Genre }[];
+      })
+    | null
+  > {
     const existing = await db.book.findUnique({
       where: { id },
       include: { genres: true },
@@ -156,10 +198,16 @@ class BookRepository {
       },
     });
 
-    return this._formatBookResponse(updated);
+    return updated;
   }
 
-  async softDelete(id: string): Promise<any | null> {
+  async softDelete(id: string): Promise<
+    | (Book & {
+        author: Author;
+        genres: { genre: Genre }[];
+      })
+    | null
+  > {
     const book = await db.book.findUnique({
       where: { id },
       include: {
@@ -182,10 +230,16 @@ class BookRepository {
       },
     });
 
-    return this._formatBookResponse(updated);
+    return updated;
   }
 
-  async restore(id: string): Promise<any | null> {
+  async restore(id: string): Promise<
+    | (Book & {
+        author: Author;
+        genres: { genre: Genre }[];
+      })
+    | null
+  > {
     const book = await db.book.findUnique({
       where: { id },
       include: {
@@ -209,36 +263,7 @@ class BookRepository {
       },
     });
 
-    return this._formatBookResponse(updated);
-  }
-
-  private _formatBookResponse(book: any): any {
-    return {
-      id: book.id,
-      title: book.title,
-      description: book.description,
-      isbn: book.isbn,
-      price: book.price,
-      quantity: book.quantity,
-      publishDate: book.publishDate,
-      status: book.status,
-      coverUrl: book.coverUrl,
-      createdAt: book.createdAt,
-      updatedAt: book.updatedAt,
-      author: book.author
-        ? {
-            id: book.author.id,
-            name: book.author.name,
-            bio: book.author.bio,
-            avatar: book.author.avatar,
-          }
-        : null,
-      genres: book.genres.map((bg: any) => ({
-        id: bg.genre.id,
-        name: bg.genre.name,
-        description: bg.genre.description,
-      })),
-    };
+    return updated;
   }
 }
 

@@ -1,17 +1,18 @@
 import { db } from "@/config/db";
 import { CreateAuthorDTO, UpdateAuthorDTO } from "@/dtos/author.dto";
 import { Author } from "@/generated/prisma";
+import { IAuthorRepository } from "./IAuthorRepository";
 
-class AuthorRepository {
+class AuthorRepository implements IAuthorRepository {
   async create(authorDto: CreateAuthorDTO): Promise<Author> {
     return await db.author.create({ data: authorDto });
   }
 
-  async getAll(): Promise<Author[]> {
+  async findAll(): Promise<Author[]> {
     return await db.author.findMany();
   }
 
-  async getById(id: string): Promise<Author | null> {
+  async findById(id: string): Promise<Author | null> {
     return await db.author.findUnique({ where: { id } });
   }
 

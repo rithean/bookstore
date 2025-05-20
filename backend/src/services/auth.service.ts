@@ -1,8 +1,8 @@
 import { CreateUserDTO } from "@/dtos/user.dto";
-import AuthRepository from "@/repositories/auth.repository";
+import { IAuthRepository } from "@/repositories/auth/IAuthRepository";
 
 class AuthService {
-  constructor(private readonly authRepository: AuthRepository) {}
+  constructor(private readonly authRepository: IAuthRepository) {}
 
   async register(userData: CreateUserDTO) {
     return await this.authRepository.register(userData);

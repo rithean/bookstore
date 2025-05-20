@@ -1,8 +1,9 @@
 import { db } from "@/config/db";
 import { CreateGenreDTO, UpdateGenreDTO } from "@/dtos/genre.dto";
 import { Genre } from "@/generated/prisma";
+import { IGenreRepository } from "./IGenreRepository";
 
-class GenreRepository {
+class GenreRepository implements IGenreRepository {
   async create(genreDto: CreateGenreDTO): Promise<Genre> {
     return db.genre.create({ data: genreDto });
   }

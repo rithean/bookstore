@@ -1,14 +1,10 @@
 import express from "express";
-import AuthRepository from "@/repositories/auth.repository";
-import AuthService from "@/services/auth.service";
-import AuthController from "@/controllers/auth.controller";
 import { authenticate } from "@/middleware/auth.middleware";
-
-const authRepository = new AuthRepository();
-const authService = new AuthService(authRepository);
-const authController = new AuthController(authService);
+import { authFactory } from "@/factories/auth.factory";
 
 const router = express.Router();
+
+const authController = authFactory();
 
 router.post("/register", authController.register.bind(authController));
 router.post("/login", authController.login.bind(authController));

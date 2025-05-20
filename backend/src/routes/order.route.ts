@@ -1,13 +1,9 @@
 import { Router } from "express";
-import OrderRepository from "@/repositories/order.repository";
-import OrderService from "@/services/order.service";
-import OrderController from "@/controllers/order.controller";
 import { authenticate, authorize } from "@/middleware/auth.middleware";
+import { orderFactory } from "@/factories/order.factory";
 
 const router = Router();
-const orderController = new OrderController(
-  new OrderService(new OrderRepository())
-);
+const orderController = orderFactory();
 
 router.post(
   "/",

@@ -1,9 +1,15 @@
 import { db } from "@/config/db";
 import { CreateOrderDTO, UpdateOrderDTO } from "@/dtos/order.dto";
-import { Order } from "@/generated/prisma";
+import { Order, OrderItem, Book, User } from "@/generated/prisma";
+import { IOrderRepository } from "./IOrderRepository";
 
-class OrderRepository {
-  async create(orderDto: CreateOrderDTO): Promise<Order> {
+class OrderRepository implements IOrderRepository {
+  async create(orderDto: CreateOrderDTO): Promise<
+    Order & {
+      user: User;
+      orderItems: (OrderItem & { book: Book })[];
+    }
+  > {
     const { orderItems, ...orderData } = orderDto;
 
     const bookIds = orderItems.map((item) => item.bookId);
@@ -59,7 +65,12 @@ class OrderRepository {
     return order;
   }
 
-  async findAll(userId?: string): Promise<Order[]> {
+  async findAll(userId?: string): Promise<
+    (Order & {
+      user: User;
+      orderItems: (OrderItem & { book: Book })[];
+    })[]
+  > {
     const orders = await db.order.findMany({
       where: {
         isDeleted: false,
@@ -77,7 +88,13 @@ class OrderRepository {
     return orders;
   }
 
-  async findById(id: string): Promise<Order | null> {
+  async findById(id: string): Promise<
+    | (Order & {
+        user: User;
+        orderItems: (OrderItem & { book: Book })[];
+      })
+    | null
+  > {
     const order = await db.order.findUnique({
       where: { id },
       include: {
@@ -92,7 +109,16 @@ class OrderRepository {
     return order;
   }
 
-  async update(id: string, updateDto: UpdateOrderDTO): Promise<Order | null> {
+  async update(
+    id: string,
+    updateDto: UpdateOrderDTO
+  ): Promise<
+    | (Order & {
+        user: User;
+        orderItems: (OrderItem & { book: Book })[];
+      })
+    | null
+  > {
     const existing = await db.order.findUnique({
       where: { id },
       include: { orderItems: true },
@@ -168,15 +194,21 @@ class OrderRepository {
     const existing = await db.order.findUnique({ where: { id } });
     if (!existing) return null;
 
-    await db.$transaction([
-      db.orderItem.deleteMany({ where: { orderId: id } }),
-      db.order.delete({ where: { id } }),
-    ]);
+    await db.$transaction(async (tx) => {
+      await tx.orderItem.deleteMany({ where: { orderId: id } });
+      await tx.order.delete({ where: { id } });
+    });
 
     return existing;
   }
 
-  async softDelete(id: string): Promise<Order | null> {
+  async softDelete(id: string): Promise<
+    | (Order & {
+        user: User;
+        orderItems: (OrderItem & { book: Book })[];
+      })
+    | null
+  > {
     const order = await db.order.findUnique({ where: { id } });
     if (!order || order.isDeleted) return null;
 
@@ -204,7 +236,13 @@ class OrderRepository {
     return updated ?? null;
   }
 
-  async restore(id: string): Promise<Order | null> {
+  async restore(id: string): Promise<
+    | (Order & {
+        user: User;
+        orderItems: (OrderItem & { book: Book })[];
+      })
+    | null
+  > {
     const order = await db.order.findUnique({ where: { id } });
     if (!order || !order.isDeleted) return null;
 
