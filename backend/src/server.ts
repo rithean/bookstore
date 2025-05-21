@@ -9,7 +9,7 @@ class Server {
 
   constructor() {
     this.app = app;
-    this.PORT = process.env.PORT || 3001;
+    this.PORT = process.env.PORT || 3000;
   }
 
   public async startServer() {

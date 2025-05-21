@@ -5,3 +5,4 @@ generated
 .dockerignore
 docker-compose.yml
 Dockerfile
+dist
